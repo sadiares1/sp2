@@ -71,6 +71,50 @@ class Users(AbstractUser):
     def is_researcher(self):
         return self.role == 'researcher'
 
+    @property
+    def firstName(self):
+        return self.first_name
+
+    @firstName.setter
+    def firstName(self, value):
+        self.first_name = value
+
+    @property
+    def lastName(self):
+        return self.last_name
+
+    @lastName.setter
+    def lastName(self, value):
+        self.last_name = value
+
+    @property
+    def middleName(self):
+        return self.middle_name
+
+    @middleName.setter
+    def middleName(self, value):
+        self.middle_name = value
+
+    @property
+    def fullName(self):
+        return self.full_name
+
+    @property
+    def createdAt(self):
+        return self.created_at
+
+    @property
+    def updatedAt(self):
+        return self.updated_at
+
+    @property
+    def isBlocked(self):
+        return self.is_blocked
+
+    @isBlocked.setter
+    def isBlocked(self, value):
+        self.is_blocked = value
+
 # Passport Data Related Models
 class Location(models.Model):
     country = models.TextField(blank=True, null=True)
@@ -175,12 +219,25 @@ class Availability(models.Model):
 
 
 class Photo(models.Model):
+    passport_data = models.ForeignKey('PassportData', on_delete=models.CASCADE, blank=True, null=True, related_name='photos')
     photo = models.ImageField(upload_to='passport_photos/', blank=True, null=True)
     photo_name = models.CharField(max_length=255, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return self.photo_name or f"Photo {self.id}"
+
+    @property
+    def photoName(self):
+        return self.photo_name
+
+    @photoName.setter
+    def photoName(self, value):
+        self.photo_name = value
+
+    @property
+    def uploadedAt(self):
+        return self.uploaded_at
 
 
 class PassportData(models.Model):
@@ -218,6 +275,86 @@ class PassportData(models.Model):
         else:
             return f"Passport Data {self.id}"
 
+    @property
+    def collectionCountryCode(self):
+        return self.collection_country_code
+
+    @collectionCountryCode.setter
+    def collectionCountryCode(self, value):
+        self.collection_country_code = value
+
+    @property
+    def accessionNumber(self):
+        return self.accession_number
+
+    @accessionNumber.setter
+    def accessionNumber(self, value):
+        self.accession_number = value
+
+    @property
+    def oldAccessionNumber(self):
+        return self.old_accession_number
+
+    @oldAccessionNumber.setter
+    def oldAccessionNumber(self, value):
+        self.old_accession_number = value
+
+    @property
+    def gbNumber(self):
+        return self.gb_number
+
+    @gbNumber.setter
+    def gbNumber(self, value):
+        self.gb_number = value
+
+    @property
+    def collectionNumber(self):
+        return self.collection_number
+
+    @collectionNumber.setter
+    def collectionNumber(self, value):
+        self.collection_number = value
+
+    @property
+    def collectingDate(self):
+        return self.collecting_date
+
+    @collectingDate.setter
+    def collectingDate(self, value):
+        self.collecting_date = value
+
+    @property
+    def acquisitionDate(self):
+        return self.acquisition_date
+
+    @acquisitionDate.setter
+    def acquisitionDate(self, value):
+        self.acquisition_date = value
+
+    @property
+    def createdAt(self):
+        return self.created_at
+
+    @property
+    def updatedAt(self):
+        return self.updated_at
+
+    @property
+    def createdBy(self):
+        return self.created_by
+
+    @createdBy.setter
+    def createdBy(self, value):
+        self.created_by = value
+
+    @property
+    def updatedBy(self):
+        return self.updated_by
+
+    @updatedBy.setter
+    def updatedBy(self, value):
+        self.updated_by = value
+
 
 class Usage(models.Model):
     passport_data = models.ForeignKey(PassportData, on_delete=models.CASCADE, related_name='usages')
@@ -226,6 +363,30 @@ class Usage(models.Model):
     
     def __str__(self):
         return f"Usage for {self.passport_data} - {self.plant_part or 'Unknown part'}"
+
+    @property
+    def passportData(self):
+        return self.passport_data
+
+    @passportData.setter
+    def passportData(self, value):
+        self.passport_data = value
+
+    @property
+    def plantPart(self):
+        return self.plant_part
+
+    @plantPart.setter
+    def plantPart(self, value):
+        self.plant_part = value
+
+    @property
+    def usageDescription(self):
+        return self.usage_description
+
+    @usageDescription.setter
+    def usageDescription(self, value):
+        self.usage_description = value
 
 
 class Customer(models.Model):
@@ -308,7 +469,6 @@ class StockMovements(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.TextField(blank=True, null=True)
     movementDate = models.DateField()
-    updatedBy = models.TextField(blank=True, null=True)
     dateUpdated = models.DateField(blank=True, null=True)
     location = models.TextField(blank=True, null=True)
     shelfNo = models.TextField(blank=True, null=True)

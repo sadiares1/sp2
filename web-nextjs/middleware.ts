@@ -7,8 +7,17 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get("auth_role")?.value;
 
   const isResearcherPath = pathname.startsWith("/dashboard-researcher");
+  const isPassportDataPath = pathname.startsWith("/passport-data");
 
-  if (isResearcherPath && (!isLoggedIn || role !== "researcher")) {
+  const isProtectedPath = isResearcherPath || isPassportDataPath;
+
+  if (isProtectedPath && !isLoggedIn) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  if (isResearcherPath && role !== "researcher") {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
@@ -24,5 +33,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard-researcher/:path*"],
+  matcher: ["/", "/dashboard-researcher/:path*", "/passport-data/:path*"],
 };

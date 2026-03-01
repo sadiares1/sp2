@@ -42,6 +42,7 @@ export default function Sidebar({ className = "" }) {
 
   const topLinks = useMemo(
     () => [
+      { href: "/dashboard-researcher", label: "Dashboard" },
       { href: "/passport-data", label: "Passport Data" },
       { href: "/characterization-data", label: "Characterization Data" },
       { href: "/inventory", label: "Inventory" },
