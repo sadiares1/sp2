@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api";
 
 const GOLD = "#d4af37";
 const GREEN = "#2d6a2d";
@@ -39,8 +40,9 @@ export default function LoginModal() {
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login/`, {
+      const response = await apiFetch(`${API_BASE}/api/auth/login/`, {
         method: "POST",
+        skipAuthRedirect: true,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginForm),
       });
@@ -87,8 +89,9 @@ export default function LoginModal() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/signup/`, {
+      const response = await apiFetch(`${API_BASE}/api/auth/signup/`, {
         method: "POST",
+        skipAuthRedirect: true,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(signupForm),
       });

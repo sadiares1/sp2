@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/Sidebar";
+import { apiFetch } from "@/lib/api";
 
 export default function DashboardResearcherPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function DashboardResearcherPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout/`, {
+      await apiFetch(`${API_BASE}/api/auth/logout/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

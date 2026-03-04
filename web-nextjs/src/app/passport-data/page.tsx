@@ -7,6 +7,7 @@ import ViewPassportData from "@/components/modals/ViewPassportData";
 import EditPassportData from "@/components/modals/EditPassportData";
 import ImportPassportData from "@/components/modals/ImportPassportData";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api";
 
 const ROWS_PER_PAGE = 25;
 
@@ -57,7 +58,7 @@ export default function PassportDataPage() {
 		}
 
 		try {
-			const response = await fetch(`${API_BASE}/api/passport-data/list/?page=${page}&page_size=${ROWS_PER_PAGE}`);
+			const response = await apiFetch(`${API_BASE}/api/passport-data/list/?page=${page}&page_size=${ROWS_PER_PAGE}`);
 			const data = await response.json();
 			if (response.ok && data?.success && Array.isArray(data.passports)) {
 				setRows(data.passports);
@@ -84,7 +85,7 @@ export default function PassportDataPage() {
 		}
 
 		try {
-			const response = await fetch(`${API_BASE}/api/passport-data/${id}/`);
+			const response = await apiFetch(`${API_BASE}/api/passport-data/${id}/`);
 			const data = await response.json();
 			if (response.ok && data?.success && data?.passport) {
 				return data.passport as PassportRow;

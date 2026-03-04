@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiFetch } from "@/lib/api";
 
 export default function ImportPassportData({ onImported = async () => {} }) {
 	const [open, setOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function ImportPassportData({ onImported = async () => {} }) {
 			const formData = new FormData();
 			formData.append("file", file);
 
-			const response = await fetch(`${API_BASE}/api/passport-data/upload/`, {
+			const response = await apiFetch(`${API_BASE}/api/passport-data/upload/`, {
 				method: "POST",
 				body: formData,
 			});

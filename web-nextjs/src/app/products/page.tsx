@@ -3,33 +3,37 @@
 import { useCallback, useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import AddCustomer from "@/components/modals/AddCustomer";
-import EditCustomer from "@/components/modals/EditCustomer";
+import AddProduct from "@/components/modals/AddProduct";
+import EditProduct from "@/components/modals/EditProduct";
+import ViewProduct from "@/components/modals/ViewProduct";
 import { apiFetch } from "@/lib/api";
 
 const ROWS_PER_PAGE = 25;
 
-type CustomerRow = {
+type ProductRow = {
 	id?: number;
-	customerName?: string | null;
-	designation?: string | null;
-	office?: string | null;
-	contactInfo?: string | null;
-	emailAddress?: string | null;
+	cropName?: string | null;
+	material?: string | null;
+	gbNumber?: string | null;
+	accessionNumber?: string | null;
+	description?: string | null;
+	unitPrice?: string | null;
+	remarks?: string | null;
 };
 
-export default function CustomersPage() {
-	const [rows, setRows] = useState<CustomerRow[]>([]);
+export default function ProductsPage() {
+	const [rows, setRows] = useState<ProductRow[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalCount, setTotalCount] = useState(0);
 	const [totalPages, setTotalPages] = useState(1);
+	const [viewOpen, setViewOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
-	const [selectedCustomer, setSelectedCustomer] = useState<CustomerRow | null>(null);
+	const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null);
 	const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-	const columns = ["Name", "Designation", "Office", "Contact", "Email", "Action"];
+	const columns = ["Crop", "Material", "GB Number", "Accession Number", "Unit Price", "Action"];
 
-	const fetchCustomers = useCallback(async (page = 1) => {
+	const fetchProducts = useCallback(async (page = 1) => {
 		if (!API_BASE) {
 			setRows([]);
 			setTotalCount(0);
@@ -38,13 +42,13 @@ export default function CustomersPage() {
 		}
 
 		try {
-			const response = await apiFetch(`${API_BASE}/api/customer/list/?page=${page}&page_size=${ROWS_PER_PAGE}`);
+			const response = await apiFetch(`${API_BASE}/api/product/list/?page=${page}&page_size=${ROWS_PER_PAGE}`);
 			const data = await response.json();
 
-			if (response.ok && data?.success && Array.isArray(data.customers)) {
-				setRows(data.customers);
+			if (response.ok && data?.success && Array.isArray(data.products)) {
+				setRows(data.products);
 				const pagination = data.pagination || {};
-				setTotalCount(typeof pagination.total === "number" ? pagination.total : data.customers.length);
+				setTotalCount(typeof pagination.total === "number" ? pagination.total : data.products.length);
 				setTotalPages(typeof pagination.total_pages === "number" ? Math.max(1, pagination.total_pages) : 1);
 				setCurrentPage(typeof pagination.current_page === "number" ? pagination.current_page : page);
 				return;
@@ -60,19 +64,20 @@ export default function CustomersPage() {
 		}
 	}, [API_BASE]);
 
-	const handleAddCustomer = async (form: {
-		customerName: string;
-		designation: string;
-		office: string;
-		contactInfo: string;
-		emailAddress: string;
+	const handleAddProduct = async (form: {
+		material: string;
+		gbNumber: string;
+		accessionNumber: string;
+		description: string;
+		unitPrice: string;
+		remarks: string;
 	}) => {
 		if (!API_BASE) {
 			return { success: false, message: "API base URL is not configured." };
 		}
 
 		try {
-			const response = await apiFetch(`${API_BASE}/api/customer/create/`, {
+			const response = await apiFetch(`${API_BASE}/api/product/create/`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -89,50 +94,92 @@ export default function CustomersPage() {
 			}
 
 			if (!response.ok || !data?.success) {
-				return { success: false, message: data?.message || "Failed to add customer." };
+				return { success: false, message: data?.message || "Failed to add product." };
 			}
 
 			setCurrentPage(1);
-			await fetchCustomers(1);
+			await fetchProducts(1);
 			return { success: true, message: "" };
 		} catch {
 			return { success: false, message: "Unable to connect to the server." };
 		}
 	};
 
-	const handleOpenEdit = async (row: CustomerRow) => {
+	const handleOpenEdit = async (row: ProductRow) => {
 		if (!API_BASE || !row.id) {
-			setSelectedCustomer(row);
+			setSelectedProduct(row);
 			setEditOpen(true);
 			return;
 		}
 
 		try {
-			const response = await apiFetch(`${API_BASE}/api/customer/${row.id}/`);
+			const response = await apiFetch(`${API_BASE}/api/product/${row.id}/`);
 			const data = await response.json();
-			if (response.ok && data?.success && data?.customer) {
-				setSelectedCustomer(data.customer);
+			if (response.ok && data?.success && data?.product) {
+				setSelectedProduct(data.product);
 				setEditOpen(true);
 				return;
 			}
 		} catch {
-			setSelectedCustomer(row);
+			setSelectedProduct(row);
 			setEditOpen(true);
 			return;
 		}
 
-		setSelectedCustomer(row);
+		setSelectedProduct(row);
 		setEditOpen(true);
 	};
+
+	const handleOpenView = async (row: ProductRow) => {
+		if (!API_BASE || !row.id) {
+			setSelectedProduct(row);
+			setViewOpen(true);
+			return;
+		}
+
+		try {
+			const response = await apiFetch(`${API_BASE}/api/product/${row.id}/`);
+			const data = await response.json();
+			if (response.ok && data?.success && data?.product) {
+				setSelectedProduct(data.product);
+				setViewOpen(true);
+				return;
+			}
+		} catch {
+			setSelectedProduct(row);
+			setViewOpen(true);
+			return;
+		}
+
+		setSelectedProduct(row);
+		setViewOpen(true);
+	};
+
+	const handleRefreshViewDetail = useCallback(async () => {
+		if (!API_BASE || !selectedProduct?.id) {
+			return;
+		}
+
+		try {
+			const response = await apiFetch(`${API_BASE}/api/product/${selectedProduct.id}/`);
+			const data = await response.json();
+			if (response.ok && data?.success && data?.product) {
+				setSelectedProduct(data.product);
+			}
+		} catch {
+			return;
+		}
+	}, [API_BASE, selectedProduct?.id]);
 
 	const handleSaveEdit = async (
 		id: number,
 		form: {
-			customerName: string;
-			designation: string;
-			office: string;
-			contactInfo: string;
-			emailAddress: string;
+			material: string;
+			gbNumber: string;
+			accessionNumber: string;
+			description: string;
+			unitPrice: string;
+			remarks: string;
 		}
 	) => {
 		if (!API_BASE) {
@@ -140,7 +187,7 @@ export default function CustomersPage() {
 		}
 
 		try {
-			const response = await apiFetch(`${API_BASE}/api/customer/${id}/update/`, {
+			const response = await apiFetch(`${API_BASE}/api/product/${id}/update/`, {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -157,11 +204,11 @@ export default function CustomersPage() {
 			}
 
 			if (!response.ok || !data?.success) {
-				return { success: false, message: data?.message || "Failed to update customer." };
+				return { success: false, message: data?.message || "Failed to update product." };
 			}
 
 			setRows((prev) =>
-				prev.map((item) => (item.id === id ? { ...item, ...(data.customer || form) } : item))
+				prev.map((item) => (item.id === id ? { ...item, ...(data.product || form) } : item))
 			);
 
 			return { success: true, message: "" };
@@ -171,8 +218,8 @@ export default function CustomersPage() {
 	};
 
 	useEffect(() => {
-		fetchCustomers(currentPage);
-	}, [currentPage, fetchCustomers]);
+		fetchProducts(currentPage);
+	}, [currentPage, fetchProducts]);
 
 	const startEntry = totalCount === 0 ? 0 : (currentPage - 1) * ROWS_PER_PAGE + 1;
 	const endEntry = totalCount === 0 ? 0 : Math.min((currentPage - 1) * ROWS_PER_PAGE + rows.length, totalCount);
@@ -185,8 +232,8 @@ export default function CustomersPage() {
 				<div className="flex-1 p-6 md:p-10">
 					<div className="mx-auto max-w-7xl space-y-4">
 						<div className="flex flex-wrap items-center justify-between gap-3">
-							<h1 className="text-2xl font-semibold tracking-tight">Customers</h1>
-							<AddCustomer onSave={handleAddCustomer} />
+							<h1 className="text-2xl font-semibold tracking-tight">Products</h1>
+							<AddProduct onSave={handleAddProduct} />
 						</div>
 
 						<div className="overflow-x-auto rounded-lg border">
@@ -204,14 +251,15 @@ export default function CustomersPage() {
 								<tbody>
 									{rows.length > 0 ? (
 										rows.map((row, index) => (
-											<tr key={`${row.id ?? "customer"}-${index}`} className="border-t">
-												<td className="px-4 py-3">{row.customerName || "-"}</td>
-												<td className="px-4 py-3">{row.designation || "-"}</td>
-												<td className="px-4 py-3">{row.office || "-"}</td>
-												<td className="px-4 py-3">{row.contactInfo || "-"}</td>
-												<td className="px-4 py-3">{row.emailAddress || "-"}</td>
+											<tr key={`${row.id ?? "product"}-${index}`} className="border-t">
+												<td className="px-4 py-3">{row.cropName || "-"}</td>
+												<td className="px-4 py-3">{row.material || "-"}</td>
+												<td className="px-4 py-3">{row.gbNumber || "-"}</td>
+												<td className="px-4 py-3">{row.accessionNumber || "-"}</td>
+												<td className="px-4 py-3">{row.unitPrice || "-"}</td>
 												<td className="px-4 py-3">
 													<div className="flex items-center gap-2">
+														<Button type="button" size="sm" variant="outline" onClick={() => handleOpenView(row)}>View</Button>
 														<Button type="button" size="sm" onClick={() => handleOpenEdit(row)}>Edit</Button>
 													</div>
 												</td>
@@ -220,7 +268,7 @@ export default function CustomersPage() {
 									) : (
 										<tr className="border-t">
 											<td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-												No customer records yet.
+												No product records yet.
 											</td>
 										</tr>
 									)}
@@ -255,11 +303,18 @@ export default function CustomersPage() {
 							</div>
 						</div>
 
-						<EditCustomer
+						<EditProduct
 							open={editOpen}
 							onOpenChange={setEditOpen}
-							data={selectedCustomer}
+							data={selectedProduct}
 							onSave={handleSaveEdit}
+						/>
+
+						<ViewProduct
+							open={viewOpen}
+							onOpenChange={setViewOpen}
+							data={selectedProduct}
+							onRefresh={handleRefreshViewDetail}
 						/>
 					</div>
 				</div>

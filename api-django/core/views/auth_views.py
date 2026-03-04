@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 import re
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -131,3 +131,24 @@ def login_view(request):
 def logout_view(request):
 	logout(request)
 	return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def current_user_view(request):
+	user = request.user
+	return Response(
+		{
+			"user": {
+				"id": user.id,
+				"email": user.email,
+				"first_name": user.first_name,
+				"last_name": user.last_name,
+				"middle_name": user.middle_name,
+				"suffix": user.suffix,
+				"full_name": user.full_name,
+				"role": user.role,
+			}
+		},
+		status=status.HTTP_200_OK,
+	)

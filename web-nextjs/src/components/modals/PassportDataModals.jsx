@@ -243,7 +243,7 @@ export default function PassportDataModals({ onCreated = (_passport) => {} }) {
 				}
 			});
 
-			const response = await fetch(`${API_BASE}/api/passport-data/create/`, {
+			const response = await apiFetch(`${API_BASE}/api/passport-data/create/`, {
 				method: "POST",
 				body: formData,
 			});

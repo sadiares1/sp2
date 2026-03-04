@@ -12,7 +12,7 @@ export default function Hero() {
         className="relative overflow-hidden"
         style={{ background: GREEN }}
       >
-        <div className="max-w-6xl mx-auto relative">
+        <div className="mx-auto relative">
           <div className="grid md:grid-cols-2 items-stretch min-h-[280px]">
 
             {/* LEFT — text content */}

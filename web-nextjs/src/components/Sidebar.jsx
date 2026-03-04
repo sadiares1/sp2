@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 const GREEN_LIGHT = "#4a9e4a";
 
@@ -23,6 +24,7 @@ function SidebarLink({ href, label, isActive, isNested = false }) {
 
 export default function Sidebar({ className = "" }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -39,6 +41,57 @@ export default function Sidebar({ className = "" }) {
       setIsAdmin(false);
     }
   }, []);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+    if (!API_BASE) {
+      localStorage.removeItem("authUser");
+      document.cookie = "auth_logged_in=; path=/; max-age=0; SameSite=Lax";
+      document.cookie = "auth_role=; path=/; max-age=0; SameSite=Lax";
+      router.replace("/");
+      return;
+    }
+
+    let isMounted = true;
+
+    const verifySession = async () => {
+      try {
+        const response = await apiFetch(`${API_BASE}/api/auth/me/`);
+        if (!response.ok) {
+          throw new Error("Session expired");
+        }
+
+        const data = await response.json();
+        if (!isMounted) {
+          return;
+        }
+
+        if (data?.user) {
+          localStorage.setItem("authUser", JSON.stringify(data.user));
+          setIsAdmin(data.user.role === "admin");
+          return;
+        }
+
+        throw new Error("Session invalid");
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        localStorage.removeItem("authUser");
+        document.cookie = "auth_logged_in=; path=/; max-age=0; SameSite=Lax";
+        document.cookie = "auth_role=; path=/; max-age=0; SameSite=Lax";
+        setIsAdmin(false);
+        router.replace("/");
+      }
+    };
+
+    verifySession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   const topLinks = useMemo(
     () => [
