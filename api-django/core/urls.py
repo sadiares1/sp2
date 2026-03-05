@@ -23,6 +23,11 @@ _product_views_spec = spec_from_file_location("core_product_views", _product_vie
 product_views = module_from_spec(_product_views_spec)
 _product_views_spec.loader.exec_module(product_views)
 
+_request_views_path = Path(__file__).resolve().parent / "views" / "request_views.py"
+_request_views_spec = spec_from_file_location("core_request_views", _request_views_path)
+request_views = module_from_spec(_request_views_spec)
+_request_views_spec.loader.exec_module(request_views)
+
 urlpatterns = [
     path("auth/signup/", auth_views.signup_view),
     path("auth/login/", auth_views.login_view),
@@ -43,4 +48,10 @@ urlpatterns = [
     path("product/create/", product_views.create_product_api),
     path("product/<int:product_id>/update/", product_views.update_product_api),
     path("product/<int:product_id>/delete/", product_views.delete_product_api),
+    path("request/list/", request_views.list_request_api),
+    path("request/create/", request_views.create_request_api),
+    path("request/<int:request_id>/", request_views.get_request_detail_api),
+    path("request/<int:request_id>/update/", request_views.update_request_api),
+    path("request/validate-gb/", request_views.validate_request_gb_number_api),
+    path("request/acquisitions/", request_views.get_request_available_acquisitions_api),
 ]
