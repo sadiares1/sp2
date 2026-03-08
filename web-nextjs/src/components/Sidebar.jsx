@@ -98,7 +98,6 @@ export default function Sidebar({ className = "" }) {
       { href: "/dashboard-researcher", label: "Dashboard" },
       { href: "/passport-data", label: "Passport Data" },
       { href: "/characterization-data", label: "Characterization Data" },
-      { href: "/inventory", label: "Inventory" },
     ],
     []
   );
@@ -135,7 +134,10 @@ export default function Sidebar({ className = "" }) {
           />
         ))}
 
-        <div className="space-y-1 pt-1">
+        <div className="pt-1">
+          <p className="px-3 py-2 text-sm font-medium text-white/90">Inventory</p>
+
+          <div className="space-y-1">
           {inventoryLinks.map((link) => (
             <SidebarLink
               key={link.href}
@@ -145,6 +147,7 @@ export default function Sidebar({ className = "" }) {
               isNested
             />
           ))}
+          </div>
         </div>
 
         {bottomLinks.map((link) => (

@@ -3547,4 +3547,33 @@ class YerbabuenaCharacteristics(models.Model):
         return f"Yerbabuena Characteristics {self.id}"
 
 
+class CompiledCharacteristic(models.Model):
+    passportData = models.ForeignKey(PassportData, on_delete=models.SET_NULL, null=True, blank=True, related_name='compiled_characteristics')
+    crop_name = models.TextField(blank=True, null=True)
+    source_model = models.CharField(max_length=120)
+    source_id = models.IntegerField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['source_model', 'source_id'], name='unique_compiled_characteristic_source')
+        ]
+        indexes = [
+            models.Index(fields=['crop_name']),
+            models.Index(fields=['source_model']),
+            models.Index(fields=['source_id']),
+            models.Index(fields=['passportData']),
+        ]
+
+    def __str__(self):
+        if self.passportData and self.passportData.accession_number:
+            return self.passportData.accession_number
+        if self.passportData and self.passportData.gb_number:
+            return self.passportData.gb_number
+        if self.passportData and self.passportData.old_accession_number:
+            return self.passportData.old_accession_number
+        return f"{self.source_model} #{self.source_id}"
+
+
 

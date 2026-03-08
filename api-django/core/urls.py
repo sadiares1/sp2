@@ -13,6 +13,11 @@ _passport_views_spec = spec_from_file_location("core_passportdata_views", _passp
 passport_views = module_from_spec(_passport_views_spec)
 _passport_views_spec.loader.exec_module(passport_views)
 
+_crop_characteristics_views_path = Path(__file__).resolve().parent / "views" / "cropcharacteristics_views.py"
+_crop_characteristics_views_spec = spec_from_file_location("core_cropcharacteristics_views", _crop_characteristics_views_path)
+crop_characteristics_views = module_from_spec(_crop_characteristics_views_spec)
+_crop_characteristics_views_spec.loader.exec_module(crop_characteristics_views)
+
 _customer_views_path = Path(__file__).resolve().parent / "views" / "customer_views.py"
 _customer_views_spec = spec_from_file_location("core_customer_views", _customer_views_path)
 customer_views = module_from_spec(_customer_views_spec)
@@ -34,6 +39,10 @@ urlpatterns = [
     path("auth/logout/", auth_views.logout_view),
     path("auth/me/", auth_views.current_user_view),
     path("passport-data/list/", passport_views.list_passport_data_api),
+    path("characterization-data/list/", passport_views.list_compiled_characteristics_api),
+    path("characterization-data/upload/", crop_characteristics_views.upload_characteristics_data),
+    path("characterization-data/<int:compiled_id>/", crop_characteristics_views.get_characteristic_detail_api),
+    path("characterization-data/<int:compiled_id>/update/", crop_characteristics_views.update_characteristic_detail_api),
     path("passport-data/<int:passport_id>/", passport_views.get_passport_data_detail_api),
     path("passport-data/create/", passport_views.create_passport_data_api),
     path("passport-data/upload/", passport_views.upload_passportdata),

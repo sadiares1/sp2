@@ -6,7 +6,7 @@ from rest_framework import status
 import pandas as pd
 from core.models import (
     PassportData, Location, Crop, Donor, 
-    Topography, Availability, Photo, Usage
+    Topography, Availability, Photo, Usage, CompiledCharacteristic
 )
 
 # Constants
@@ -358,6 +358,75 @@ def list_passport_data_api(request):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+def list_compiled_characteristics_api(request):
+    compiled_qs = (
+        CompiledCharacteristic.objects.select_related(
+            'passportData', 'passportData__crop', 'passportData__location'
+        )
+        .all()
+        .order_by('-updatedAt', '-id')
+    )
+
+    try:
+        page = int(request.GET.get('page', 1))
+    except (TypeError, ValueError):
+        page = 1
+
+    try:
+        page_size = int(request.GET.get('page_size', 25))
+    except (TypeError, ValueError):
+        page_size = 25
+
+    page = max(1, page)
+    page_size = min(max(1, page_size), 100)
+
+    paginator = Paginator(compiled_qs, page_size)
+    page_obj = paginator.get_page(page)
+
+    records = []
+    for compiled in page_obj.object_list:
+        passport = compiled.passportData
+        crop = passport.crop if passport else None
+        location = passport.location if passport else None
+
+        records.append(
+            {
+                'id': compiled.id,
+                'source_model': compiled.source_model,
+                'source_id': compiled.source_id,
+                'passport_id': passport.id if passport else None,
+                'accession_number': passport.accession_number if passport else None,
+                'gb_number': passport.gb_number if passport else None,
+                'old_accession_number': passport.old_accession_number if passport else None,
+                'crop_name': crop.crop_name if crop else compiled.crop_name,
+                'genus': crop.genus if crop else None,
+                'species': crop.species if crop else None,
+                'country': location.country if location else None,
+                'province': location.province if location else None,
+                'nearest_town': location.nearest_town if location else None,
+                'barangay': location.barangay if location else None,
+            }
+        )
+
+    return JsonResponse(
+        {
+            'success': True,
+            'characterizations': records,
+            'pagination': {
+                'total': paginator.count,
+                'total_pages': paginator.num_pages,
+                'current_page': page_obj.number,
+                'page_size': page_size,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+            },
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def get_passport_data_detail_api(request, passport_id):
     passport = (
         PassportData.objects.select_related(
@@ -555,5 +624,7 @@ def upload_passportdata(request):
             }
         })
     return JsonResponse({'success': False, 'message': 'No file uploaded'}, status=400)
+
+
     
 
