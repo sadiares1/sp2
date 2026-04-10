@@ -32,8 +32,6 @@ type CharacteristicDetail = {
 	source_model?: string | null;
 	source_id?: number | null;
 	crop_name?: string | null;
-	photo?: string | null;
-	photos?: Array<{ id?: number; photo_name?: string | null; url?: string | null }>;
 	passport?: {
 		id?: number | null;
 		accession_number?: string | null;
